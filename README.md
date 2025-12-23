@@ -14,3 +14,7 @@ training procedures, and experimental details.
 ### Usage
 ```bash
 python app.py --paper examples/sample_paper.pdf
+
+### Outputs
+- `paper_summary.json`: extracted paper sections (abstract, method, results)
+- `model.py`, `train.py`, `dataset.py`: generated PyTorch code

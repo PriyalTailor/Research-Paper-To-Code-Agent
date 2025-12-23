@@ -5,12 +5,6 @@ import re
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-SYSTEM_PROMPT = """
-You are a senior machine learning engineer.
-Generate clean, minimal, runnable PyTorch code.
-Do not add explanations or markdown.
-"""
-
 def _extract_code(text: str) -> str:
     match = re.search(r"```python(.*?)```", text, re.DOTALL)
     if match:

@@ -15,13 +15,6 @@ def estimate_confidence(model_design: dict) -> float:
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-SYSTEM_PROMPT = """
-You are a senior machine learning researcher.
-Return ONLY valid JSON.
-Do not add explanations, markdown, or extra text.
-If something is missing, write "Not specified".
-"""
-
 def _extract_json(text: str) -> dict:
     """
     Safely extract JSON object from LLM output.
@@ -66,3 +59,16 @@ Paper Sections:
         print("\n⚠️ RAW LLM OUTPUT (DEBUG):\n")
         print(raw_output)
         raise e
+    
+def save_paper_summary(sections: dict, output_dir="generated"):
+    """
+    Save extracted paper sections (abstract, method, etc.)
+    to a JSON file for transparency and inspection.
+    """
+    os.makedirs(output_dir, exist_ok=True)
+
+    summary_path = os.path.join(output_dir, "paper_summary.json")
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(sections, f, indent=2)
+
+    return summary_path

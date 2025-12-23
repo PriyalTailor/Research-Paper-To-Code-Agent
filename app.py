@@ -1,7 +1,7 @@
 import argparse
 from agent.paper_loader import load_pdf
 from agent.section_extractor import extract_sections
-from agent.model_reasoner import extract_model_design, estimate_confidence
+from agent.model_reasoner import extract_model_design, estimate_confidence,save_paper_summary
 from agent.code_generator import generate_pytorch_code, write_code_files
 
 def main():
@@ -22,6 +22,8 @@ def main():
 
         # 2. Extract sections
         sections = extract_sections(text)
+        summary_path = save_paper_summary(sections)
+        print(f"\nPaper summary saved to: {summary_path}")
 
         # 3. LLM reasoning
         model_design = extract_model_design(sections)
@@ -30,17 +32,17 @@ def main():
         confidence = estimate_confidence(model_design)
 
     except Exception as e:
-        print("\n❌ ERROR during paper processing:")
+        print("\nERROR during paper processing:")
         print(e)
         return
 
     # ----- Normal execution continues if no error -----
 
-    print("\n📊 MODEL EXTRACTION REPORT")
+    print("\nMODEL EXTRACTION REPORT")
     print(f"Confidence score: {confidence:.2f}")
 
     if model_design.get("missing_details"):
-        print("\n⚠️ Missing / unclear details:")
+        print("\nMissing / unclear details:")
         for item in model_design["missing_details"]:
             print(f"- {item}")
 
@@ -50,11 +52,11 @@ def main():
         write_code_files(code)
 
     except Exception as e:
-        print("\n❌ ERROR during code generation:")
+        print("\nERROR during code generation:")
         print(e)
         return
 
-    print("\n✅ PyTorch code generated in /generated folder")
+    print("\nPyTorch code generated in /generated folder")
 
 if __name__ == "__main__":
     main()
