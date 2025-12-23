@@ -1,23 +1,24 @@
 import torch
-from torchvision import datasets, transforms
+from torch.utils.data import Dataset
+from torchvision import transforms
 
-class COVID19Dataset(torch.utils.data.Dataset):
-    def __init__(self, transform=None):
-        # TODO: Load dataset images and masks
+class COVID19Dataset(Dataset):
+    def __init__(self, image_paths, masks_paths, transform=None):
+        self.image_paths = image_paths
+        self.masks_paths = masks_paths
         self.transform = transform
 
     def __len__(self):
-        # TODO: Return the total number of images
-        return 0
+        return len(self.image_paths)
 
     def __getitem__(self, idx):
-        # TODO: Load and return a single image and its mask
+        # TODO: Load image and mask
+        image = None  # Load image
+        mask = None   # Load mask
+
+        if self.transform:
+            image = self.transform(image)
+            mask = self.transform(mask)
+
         return image, mask
 
-# Define transforms
-transform = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.ToTensor(),
-])
-
-dataset = COVID19Dataset(transform=transform)

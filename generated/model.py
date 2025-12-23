@@ -19,6 +19,6 @@ class SegNet(nn.Module):
         # TODO: Implement forward pass
         return x
 
-# Choose one of the models
+# Choose model
 model = UNet()  # or SegNet()
 

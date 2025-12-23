@@ -3,6 +3,16 @@ import json
 import os
 import re
 
+def estimate_confidence(model_design: dict) -> float:
+    """
+    Simple heuristic confidence score (0–1).
+    """
+    missing = model_design.get("missing_details", [])
+    base = 1.0
+    penalty = 0.1 * len(missing)
+    return max(0.3, base - penalty)
+
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 SYSTEM_PROMPT = """

@@ -1,28 +1,24 @@
 import torch
 import torch.optim as optim
-import torch.nn.functional as F
+from torch.utils.data import DataLoader
 from dataset import COVID19Dataset
-from model import model
+from model import UNet
 
-# Hyperparameters
-learning_rate = 0.001  # TODO: Specify learning rate
-num_epochs = 160
+# TODO: Load dataset and split into train, validation, test
+train_dataset = COVID19Dataset(image_paths=[], masks_paths=[], transform=None)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 
-# Load dataset
-train_dataset = COVID19Dataset()  # TODO: Split dataset into train/val/test
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=16, shuffle=True)
+model = UNet()
+criterion = nn.CrossEntropyLoss()  # TODO: Implement weighted cross-entropy
+optimizer = optim.Adam(model.parameters())
 
-# Optimizer
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-# Training loop
-for epoch in range(num_epochs):
+for epoch in range(160):
     model.train()
     for images, masks in train_loader:
+        # TODO: Implement training step
         optimizer.zero_grad()
         outputs = model(images)
-        loss = F.binary_cross_entropy_with_logits(outputs, masks)  # TODO: Use weighted loss
+        loss = criterion(outputs, masks)
         loss.backward()
         optimizer.step()
-    # TODO: Add validation and evaluation metrics
-    print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}')
+    # TODO: Implement validation and logging
