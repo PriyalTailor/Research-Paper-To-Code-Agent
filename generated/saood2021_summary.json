@@ -1,0 +1,30 @@
+{
+  "problem_statement": "There is an urgent need for efficient and automated tools to detect and semantically segment infected lung tissues in CT images of COVID-19 patients. Such segmentation would assist in diagnosis, quantify severity of illness, and help prioritize treatment. The study compares two deep learning architectures, SegNet and U-NET, for binary and multi-class segmentation of infected versus healthy lung tissue and infection types in CT lung images.",
+  "input_data": "The dataset consists of 101 one-slice CT scans of lungs from COVID-19 patients, resized to 512 \u00d7 512 pixels, provided by the Italian Society of Medical and Interventional Radiology. The images come with region labels compiled into NIFTI format. The dataset includes four classes: C0 (non-infected lung and lung-enclosing tissue), C1 (Ground Glass Opacification), C2 (Consolidation), and C3 (pleural effusion). The dataset is imbalanced with C0 dominating in pixel count. Lung masks for segmentation were created automatically using an existing lung segmentation model (JoHo/lungmask). The dataset was split into training (72 images), validation (10 images), and testing (18 images) sets.",
+  "model_architecture": {
+    "U-NET": "A medical image segmentation network with a contracting path (several 3\u00d73 convolution layers with ReLU) that extracts features, and an expansive path that uses up-convolutions and concatenations from the contracting path to generate segmentation maps. The architecture links contracting and expansive paths to preserve spatial information.",
+    "SegNet": "A deep convolutional encoder-decoder network originally designed for scene segmentation. The encoder is based on VGG16 convolutional layers without fully connected layers, reducing parameters. The decoder upsamples using pooling indices from the encoder to reconstruct segmentation masks. The network depth is three encoder-decoder layers."
+  },
+  "loss_function": "Weighted cross-entropy loss function with class weights calculated using median frequency balancing to address class imbalance. The loss is defined as \u03b3 = - (1/K) \u2211_{k=1}^K \u2211_{n=1}^N w_i * l_n^k * log(p_n^k), where K is number of instances, N number of classes, l_n^k and p_n^k are label and prediction for class n in instance k, and w_i is the class weight.",
+  "training_details": {
+    "optimizer": "ADAM stochastic optimizer",
+    "input_size": "Images resized to 256 \u00d7 256 pixels",
+    "dataset_split": "Training: 72 images (72%), Validation: 10 images (10%), Testing: 18 images (18%)",
+    "epochs": 160,
+    "hyperparameter_search": "Nine experiments per network with varying initial learning rates (ILR) and mini-batch sizes as per Table 2. ILR ranged from 1e-4 to 3e-3; mini-batch sizes ranged from 2 to 12.",
+    "hardware": "Training performed on Windows 10 machine with Intel Core i5-9400F CPU and NVIDIA 1050ti 4GB GPU using MATLAB R2020a Deep Learning Toolbox 14.0 and CUDA 10.0. GPU usage reduced training time by factor of 35.",
+    "cross_validation": "Five-fold cross-validation performed with randomized dataset splits of 70% training, 10% validation, and 20% testing per fold."
+  },
+  "missing_details": [
+    "Exact architecture details such as number of filters per convolutional layer, number of layers, and activation functions beyond ReLU are not fully specified.",
+    "Details on data augmentation techniques, if any, during training are not mentioned.",
+    "Specifics on how class weights were computed (exact median frequency values) are not provided.",
+    "Details on learning rate schedules or early stopping criteria are not described.",
+    "Information about post-processing steps on segmentation outputs is not provided.",
+    "No mention of validation metrics or criteria used to select the best model during training beyond accuracy.",
+    "Details on how multi-class segmentation labels were encoded and handled (e.g., one-hot encoding) are not specified.",
+    "No information on whether any pretraining or transfer learning was used for the networks.",
+    "Details on how missing or corrupted data were handled, if any, are not discussed.",
+    "No mention of the software versions for CUDA or cuDNN beyond CUDA 10.0."
+  ]
+}

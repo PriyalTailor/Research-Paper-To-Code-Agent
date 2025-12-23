@@ -3,6 +3,36 @@ import json
 import os
 import re
 
+SYSTEM_PROMPT = """
+
+task:
+1. Read extracted sections of a research paper.
+2. Identify the core model architecture and training procedure.
+3. Output a STRICT JSON object describing the model.
+
+Rules:
+- Output ONLY valid JSON
+- Do NOT include markdown
+- Do NOT include explanations
+- If information is missing, infer reasonably
+
+JSON schema:
+{
+  "model_name": "",
+  "architecture": {
+    "layers": [],
+    "inputs": "",
+    "outputs": ""
+  },
+  "training": {
+    "loss": "",
+    "optimizer": "",
+    "learning_rate": ""
+  },
+  "notes": ""
+}
+"""
+
 def estimate_confidence(model_design: dict) -> float:
     """
     Simple heuristic confidence score (0–1).
@@ -25,50 +55,47 @@ def _extract_json(text: str) -> dict:
 
     return json.loads(match.group())
 
-def extract_model_design(paper_sections: dict) -> dict:
+def extract_model_design(sections):
     prompt = f"""
-Extract the following from the research paper:
+    From the following research paper sections, extract:
 
-- problem_statement
-- input_data
-- model_architecture
-- loss_function
-- training_details
-- missing_details (as a list)
+    1. Problem statement
+    2. Input data description
+    3. Model architecture
+    4. Loss function
+    5. Training details
+    6. Missing details (list anything unclear or not specified)
 
-Return ONLY a JSON object with these exact keys.
+    Return ONLY valid JSON with keys:
+    problem_statement, input_data, model_architecture,
+    loss_function, training_details, missing_details
 
-Paper Sections:
-{json.dumps(paper_sections, indent=2)}
-"""
+    Paper content:
+    {sections}
+    """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4.1-mini",
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": "You are a research paper analysis agent."},
             {"role": "user", "content": prompt}
         ],
-        temperature=0.1
+        temperature=0.2
     )
 
-    raw_output = response.choices[0].message.content.strip()
+    content = response.choices[0].message.content.strip()
 
-    try:
-        return _extract_json(raw_output)
-    except Exception as e:
-        print("\n⚠️ RAW LLM OUTPUT (DEBUG):\n")
-        print(raw_output)
-        raise e
+    if content.startswith("```"):
+        content = content.replace("```json", "").replace("```", "").strip()
+
+    return json.loads(content)
     
-def save_paper_summary(sections: dict, output_dir="generated"):
-    """
-    Save extracted paper sections (abstract, method, etc.)
-    to a JSON file for transparency and inspection.
-    """
+def save_paper_summary(summary: dict, base_name: str, output_dir="generated"):
     os.makedirs(output_dir, exist_ok=True)
 
-    summary_path = os.path.join(output_dir, "paper_summary.json")
+    summary_path = os.path.join(output_dir, f"{base_name}_summary.json")
     with open(summary_path, "w", encoding="utf-8") as f:
-        json.dump(sections, f, indent=2)
+        json.dump(summary, f, indent=2)
 
     return summary_path
+

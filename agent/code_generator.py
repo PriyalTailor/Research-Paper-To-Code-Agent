@@ -3,6 +3,35 @@ import os
 import json
 import re
 
+SYSTEM_PROMPT = """
+
+task:
+1. Read extracted sections of a research paper.
+2. Identify the core model architecture and training procedure.
+3. Output a STRICT JSON object describing the model.
+
+Rules:
+- Output ONLY valid JSON
+- Do NOT include markdown
+- Do NOT include explanations
+- If information is missing, infer reasonably
+
+JSON schema:
+{
+  "model_name": "",
+  "architecture": {
+    "layers": [],
+    "inputs": "",
+    "outputs": ""
+  },
+  "training": {
+    "loss": "",
+    "optimizer": "",
+    "learning_rate": ""
+  },
+  "notes": ""
+}
+"""
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def _extract_code(text: str) -> str:
@@ -45,9 +74,19 @@ Return output in this JSON format:
     raw = response.choices[0].message.content
     return json.loads(raw)
 
-def write_code_files(code_dict: dict, output_dir="generated"):
+def write_code_files(code_dict: dict, base_name: str, output_dir="generated"):
     os.makedirs(output_dir, exist_ok=True)
 
-    for filename, content in code_dict.items():
-        with open(os.path.join(output_dir, filename), "w", encoding="utf-8") as f:
+    rename_map = {
+        "model.py": f"{base_name}_model.py",
+        "dataset.py": f"{base_name}_dataset.py",
+        "train.py": f"{base_name}_train.py"
+    }
+
+    for original_name, content in code_dict.items():
+        filename = rename_map.get(original_name, original_name)
+        path = os.path.join(output_dir, filename)
+
+        with open(path, "w", encoding="utf-8") as f:
             f.write(content)
+
